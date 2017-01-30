@@ -10,7 +10,7 @@ use app\models\Animal as AnimalModel;
 /**
 * Animal represents the model behind the search form about `app\models\Animal`.
 */
-class Animal extends AnimalModel
+class AnimalCustom extends AnimalModel
 {
 /**
 * @inheritdoc
@@ -42,7 +42,7 @@ return Model::scenarios();
 * @return ActiveDataProvider
 */
 public function search($params)
-{
+{ //die(var_dump($params));
 $query = AnimalModel::find();
 
 $dataProvider = new ActiveDataProvider([
@@ -66,7 +66,7 @@ $query->andFilterWhere([
             'created_at' => $this->created_at,
         ]);
 
-        $query->andFilterWhere(['like', 'location', $this->location])
+        $query
             ->andFilterWhere(['like', 'name', $this->name])
             ->andFilterWhere(['like', 'extra_information', $this->extra_information])
             ->andFilterWhere(['like', 'photo', $this->photo]);

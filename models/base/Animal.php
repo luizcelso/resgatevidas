@@ -7,7 +7,7 @@ use yii\behaviors\TimestampBehavior;
 use yii\db\Expression;
 use Yii;
 use yii\web\UploadedFile;
-
+use yii\helpers\ArrayHelper;
 /**
  * This is the base-model class for table "animal".
  *
@@ -127,6 +127,17 @@ abstract class Animal extends \yii\db\ActiveRecord
     public function getAnimalType()
     {
         return $this->hasOne(\app\models\AnimalType::className(), ['id' => 'animal_type_id']);
+    }
+
+    public static function getAnimalTypes()
+    {
+        $list = \app\models\AnimalType::find()->all();
+        //die(var_dump($list));
+        $list = ArrayHelper::map($list, 'id', function($model, $defaultValue) {
+            return $model->name;
+        });
+        //die(var_dump($list));
+        return $list;
     }
 
     /**

@@ -14,6 +14,7 @@ use app\models\Animal;
 use app\models\Blog;
 use yii\data\Pagination;
 use dosamigos\google\maps\services\GeocodingClient;
+use app\models\search\AnimalCustom as AnimalSearch;
 class SiteController extends Controller
 {
     public function behaviors()
@@ -206,6 +207,62 @@ class SiteController extends Controller
         return $this->render('contact', [
             'model' => $model,
         ]);
+    }
+
+    public function actionSearch()
+    {
+        $searchModel  = new AnimalSearch;
+    $dataProvider = $searchModel->search($_POST);
+//die(var_dump($dataProvider->models));
+
+    if (Yii::$app->request->post()) {
+        $location_search = false;
+        $r = array();
+        //die(var_dump(strlen($_POST['AnimalCustom']['location_range']) > 0));
+        //die(var_dump($_POST['AnimalCustom']));
+        //COLOCAR PARA CHECAR SE O RAIO DE ALCANCE FOR MAIOR QUE 15km
+        if (strlen($_POST['AnimalCustom']['location_range']) > 0 && strlen($_POST['AnimalCustom']['location']) > 0 && $_POST['AnimalCustom']['location_range'] != 'more') {
+            //die(var_dump($_POST['AnimalCustom']['location']));
+            $location_search = true;
+            
+            $location_ = explode(';', $_POST['AnimalCustom']['location']);
+            $lat1 = $location_[0];
+            $lon1 = $location_[1];
+
+            //die(var_dump($dataProvider->models));
+            
+            foreach ($dataProvider->models as $model => $value) {
+                $location_ = explode(';', $value->location);
+                $lat2 = $location_[0];
+                $lon2 = $location_[1];
+
+                $theta = $lon1 - $lon2;
+                $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
+                $dist = acos($dist);
+                $dist = rad2deg($dist);
+                $miles = $dist * 60 * 1.1515;
+                $km = $miles * 1.609344;
+
+                //\yii\helpers\ArrayHelper::remove($dataProvider->models, 0);
+                //die(var_dump($km, $model, $dataProvider->models ));
+                if ($km <= $_POST['AnimalCustom']['location_range']) {
+                    $r[] = $model;
+                }
+
+            }
+
+            //die(var_dump($r));
+        }
+        return $this->render('search_result', ['model' => $dataProvider, 'location_search' => $location_search, 'r' => $r]);
+    }
+
+
+return $this->render('search', [
+'dataProvider' => $dataProvider,
+    'model' => $searchModel,
+]);
+
+       
     }
 
     public function actionAbout()
